@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, User, GraduationCap, UserCheck, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginForm {
   email: string;
@@ -27,13 +28,21 @@ interface SignUpForm {
   designation?: string;
 }
 
+// Default credentials for demo
+const defaultCreds: Record<'student' | 'staff', { email: string; password: string }> = {
+  student: { email: 'student@sece.ac.in', password: 'student@123' },
+  staff: { email: 'staff@sece.ac.in', password: 'staff@123' }
+};
+
 function App() {
-  const [currentView, setCurrentView] = useState<'login' | 'signup'>('signup'); // Changed to 'signup'
+  const [currentView, setCurrentView] = useState<'login' | 'signup'>('login');
+  const navigate = useNavigate();
+
   const [loginForm, setLoginForm] = useState<LoginForm>({
-    email: '',
-    password: '',
+    ...defaultCreds.student,
     userType: 'student'
   });
+
   const [signupForm, setSignupForm] = useState<SignUpForm>({
     email: '',
     password: '',
@@ -43,6 +52,7 @@ function App() {
     prefix: '',
     userType: 'student'
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<any>({});
@@ -64,8 +74,38 @@ function App() {
 
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert(`${loginForm.userType.charAt(0).toUpperCase() + loginForm.userType.slice(1)} login successful!`);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // Check credentials
+      const expectedCreds = defaultCreds[loginForm.userType];
+      if (loginForm.email === expectedCreds.email && loginForm.password === expectedCreds.password) {
+        // Store auth token and user data
+        localStorage.setItem('authToken', 'dummy-jwt-token');
+        localStorage.setItem('userData', JSON.stringify({
+          name: loginForm.userType === 'student' ? 'John Doe' : 'Dr. Smith',
+          rollNo: loginForm.userType === 'student' ? '20CS001' : undefined,
+          department: 'Computer Science Engineering',
+          year: loginForm.userType === 'student' ? '3rd Year' : undefined,
+          section: loginForm.userType === 'student' ? 'A' : undefined,
+          email: loginForm.email,
+          accommodation: loginForm.userType === 'student' ? 'Hostel' : undefined,
+          block: loginForm.userType === 'student' ? 'A Block' : undefined,
+          roomNo: loginForm.userType === 'student' ? 'A-201' : undefined,
+          employeeId: loginForm.userType === 'staff' ? 'EMP001' : undefined,
+          designation: loginForm.userType === 'staff' ? 'Professor' : undefined
+        }));
+
+        // Navigate based on user type
+        if (loginForm.userType === 'student') {
+          navigate('/student/home', { replace: true });
+        } else {
+          // For staff, you can add staff home page later
+          alert('Staff login successful! Staff dashboard coming soon.');
+        }
+      } else {
+        alert('Invalid credentials. Please check your email and password.');
+      }
     } catch (error) {
       alert('Login failed. Please try again.');
     } finally {
@@ -86,9 +126,35 @@ function App() {
     }
 
     setIsLoading(true);
-    await new Promise(res => setTimeout(res, 1500));
-    alert(`${signupForm.userType.charAt(0).toUpperCase() + signupForm.userType.slice(1)} sign-up successful!`);
-    setIsLoading(false);
+    try {
+      await new Promise(res => setTimeout(res, 1500));
+
+      // Store user data and navigate
+      localStorage.setItem('authToken', 'dummy-jwt-token');
+      localStorage.setItem('userData', JSON.stringify({
+        name: `${signupForm.firstName} ${signupForm.lastName}`,
+        rollNo: signupForm.rollNo,
+        department: signupForm.dept,
+        year: signupForm.year,
+        section: signupForm.section,
+        email: signupForm.email,
+        accommodation: signupForm.accommodation,
+        block: signupForm.block,
+        roomNo: signupForm.roomNo,
+        employeeId: signupForm.employeeId,
+        designation: signupForm.designation
+      }));
+
+      if (signupForm.userType === 'student') {
+        navigate('/student/home', { replace: true });
+      } else {
+        alert('Staff registration successful! Staff dashboard coming soon.');
+      }
+    } catch (error) {
+      alert('Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -98,10 +164,13 @@ function App() {
 
   const toggleUserType = (form: 'login' | 'signup') => {
     if (form === 'login') {
-      setLoginForm(prev => ({
-        ...prev,
-        userType: prev.userType === 'student' ? 'staff' : 'student'
-      }));
+      setLoginForm(prev => {
+        const newType = prev.userType === 'student' ? 'staff' : 'student';
+        return {
+          ...defaultCreds[newType],
+          userType: newType
+        };
+      });
     } else {
       setSignupForm(prev => ({
         ...prev,
@@ -206,6 +275,27 @@ function App() {
         .subtitle {
           font-size: 14px;
           color: #666;
+        }
+        
+        .demo-credentials {
+          background: rgba(255, 105, 105, 0.1);
+          border: 1px solid rgba(255, 105, 105, 0.2);
+          border-radius: 8px;
+          padding: 12px;
+          margin: 16px 0;
+          font-size: 12px;
+          text-align: center;
+        }
+        
+        .demo-title {
+          font-weight: 600;
+          color: #BB2525;
+          margin-bottom: 4px;
+        }
+        
+        .demo-creds {
+          color: #666;
+          font-family: monospace;
         }
         
         .toggle {
@@ -407,10 +497,10 @@ function App() {
       <div className="background-boxes"></div>
 
       <div className="form-container">
-        {currentView === 'login' && (
-          <button className="back-button" onClick={() => setCurrentView('signup')}>
+        {currentView === 'signup' && (
+          <button className="back-button" onClick={() => setCurrentView('login')}>
             <ArrowLeft size={16} />
-            Back to Sign Up
+            Back to Login
           </button>
         )}
 
@@ -422,7 +512,102 @@ function App() {
           <p className="subtitle">Centralized Student Utility Hub</p>
         </div>
 
-        {currentView === 'signup' ? (
+        {currentView === 'login' ? (
+          <>
+            {/* Demo Credentials Info */}
+            <div className="demo-credentials">
+              <div className="demo-title">Demo Credentials</div>
+              <div className="demo-creds">
+                Student: student@sece.ac.in / student@123<br />
+                Staff: staff@sece.ac.in / staff@123
+              </div>
+            </div>
+
+            {/* User Type Toggle */}
+            <div className="toggle">
+              <div
+                className={`toggle-option ${loginForm.userType === 'student' ? 'active' : ''}`}
+                onClick={() => toggleUserType('login')}
+              >
+                <User size={16} />
+                Student
+              </div>
+              <div
+                className={`toggle-option ${loginForm.userType === 'staff' ? 'active' : ''}`}
+                onClick={() => toggleUserType('login')}
+              >
+                <UserCheck size={16} />
+                Staff
+              </div>
+            </div>
+
+            {/* Login Form */}
+            <form onSubmit={handleLoginSubmit}>
+              <div className="form-group">
+                <label htmlFor="email">
+                  {loginForm.userType === 'student' ? 'Student Email' : 'Staff Email'}
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  className={`form-input ${errors.email ? 'error' : ''}`}
+                  placeholder="your.email@sece.ac.in"
+                  value={loginForm.email}
+                  onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
+                  required
+                />
+                {errors.email && (
+                  <div className="error-msg">
+                    ⚠ {errors.email}
+                  </div>
+                )}
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <div className="input-container">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    id="password"
+                    className={`form-input password-input ${errors.password ? 'error' : ''}`}
+                    placeholder="Enter your password"
+                    value={loginForm.password}
+                    onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="eye-toggle"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <div className="error-msg">
+                    ⚠ {errors.password}
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="submit-btn"
+                disabled={isLoading}
+              >
+                {isLoading && <span className="loading-spinner"></span>}
+                {isLoading
+                  ? `Signing in as ${loginForm.userType}...`
+                  : `Sign in as ${loginForm.userType.charAt(0).toUpperCase() + loginForm.userType.slice(1)}`
+                }
+              </button>
+            </form>
+
+            <div className="switch-form">
+              Don't have an account? <span className="switch-link" onClick={() => setCurrentView('signup')}>Sign up here</span>
+            </div>
+          </>
+        ) : (
           <>
             {/* User Type Toggle for Signup */}
             <div className="toggle">
@@ -673,92 +858,6 @@ function App() {
 
             <div className="switch-form">
               Already have an account? <span className="switch-link" onClick={() => setCurrentView('login')}>Sign in here</span>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* User Type Toggle for Login */}
-            <div className="toggle">
-              <div
-                className={`toggle-option ${loginForm.userType === 'student' ? 'active' : ''}`}
-                onClick={() => toggleUserType('login')}
-              >
-                <User size={16} />
-                Student
-              </div>
-              <div
-                className={`toggle-option ${loginForm.userType === 'staff' ? 'active' : ''}`}
-                onClick={() => toggleUserType('login')}
-              >
-                <UserCheck size={16} />
-                Staff
-              </div>
-            </div>
-
-            {/* Login Form */}
-            <form onSubmit={handleLoginSubmit}>
-              <div className="form-group">
-                <label htmlFor="email">
-                  {loginForm.userType === 'student' ? 'Student Email' : 'Staff Email'}
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  className={`form-input ${errors.email ? 'error' : ''}`}
-                  placeholder="your.email@sece.ac.in"
-                  value={loginForm.email}
-                  onChange={(e) => setLoginForm(prev => ({ ...prev, email: e.target.value }))}
-                  required
-                />
-                {errors.email && (
-                  <div className="error-msg">
-                    ⚠ {errors.email}
-                  </div>
-                )}
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="password">Password</label>
-                <div className="input-container">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    className={`form-input password-input ${errors.password ? 'error' : ''}`}
-                    placeholder="Enter your password"
-                    value={loginForm.password}
-                    onChange={(e) => setLoginForm(prev => ({ ...prev, password: e.target.value }))}
-                    required
-                  />
-                  <button
-                    type="button"
-                    className="eye-toggle"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {errors.password && (
-                  <div className="error-msg">
-                    ⚠ {errors.password}
-                  </div>
-                )}
-              </div>
-
-              <button
-                type="submit"
-                className="submit-btn"
-                disabled={isLoading}
-              >
-                {isLoading && <span className="loading-spinner"></span>}
-                {isLoading
-                  ? `Signing in as ${loginForm.userType}...`
-                  : `Sign in as ${loginForm.userType.charAt(0).toUpperCase() + loginForm.userType.slice(1)}`
-                }
-              </button>
-            </form>
-
-            <div className="switch-form">
-              Don't have an account? <span className="switch-link" onClick={() => setCurrentView('signup')}>Sign up here</span>
             </div>
           </>
         )}

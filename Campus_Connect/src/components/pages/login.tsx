@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Eye, EyeOff, User, GraduationCap, UserCheck, ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginForm {
   email: string;
@@ -27,14 +28,14 @@ interface SignUpForm {
   designation?: string;
 }
 
-// Default credentials for demo
 const defaultCreds: Record<'student' | 'staff', { email: string; password: string }> = {
   student: { email: 'student@sece.ac.in', password: 'student@123' },
   staff: { email: 'staff@sece.ac.in', password: 'staff@123' }
 };
 
-function App() {
+function LoginPage() {
   const [currentView, setCurrentView] = useState<'login' | 'signup'>('login');
+  const navigate = useNavigate();
 
   const [loginForm, setLoginForm] = useState<LoginForm>({
     ...defaultCreds.student,
@@ -72,8 +73,34 @@ function App() {
 
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      alert(`${loginForm.userType.charAt(0).toUpperCase() + loginForm.userType.slice(1)} login successful!`);
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      const expectedCreds = defaultCreds[loginForm.userType];
+      if (loginForm.email === expectedCreds.email && loginForm.password === expectedCreds.password) {
+        localStorage.setItem('authToken', 'dummy-jwt-token');
+        localStorage.setItem('userData', JSON.stringify({
+          name: loginForm.userType === 'student' ? 'John Doe' : 'Dr. Smith',
+          rollNo: loginForm.userType === 'student' ? '20CS001' : undefined,
+          department: 'Computer Science Engineering',
+          year: loginForm.userType === 'student' ? '3rd Year' : undefined,
+          section: loginForm.userType === 'student' ? 'A' : undefined,
+          email: loginForm.email,
+          accommodation: loginForm.userType === 'student' ? 'Hostel' : undefined,
+          block: loginForm.userType === 'student' ? 'A Block' : undefined,
+          roomNo: loginForm.userType === 'student' ? 'A-201' : undefined,
+          phone: '+91 9876543210',
+          employeeId: loginForm.userType === 'staff' ? 'EMP001' : undefined,
+          designation: loginForm.userType === 'staff' ? 'Professor' : undefined
+        }));
+
+        if (loginForm.userType === 'student') {
+          navigate('/student/home', { replace: true });
+        } else {
+          alert('Staff login successful! Staff dashboard coming soon.');
+        }
+      } else {
+        alert('Invalid credentials. Please check your email and password.');
+      }
     } catch (error) {
       alert('Login failed. Please try again.');
     } finally {
@@ -94,9 +121,35 @@ function App() {
     }
 
     setIsLoading(true);
-    await new Promise(res => setTimeout(res, 1500));
-    alert(`${signupForm.userType.charAt(0).toUpperCase() + signupForm.userType.slice(1)} sign-up successful!`);
-    setIsLoading(false);
+    try {
+      await new Promise(res => setTimeout(res, 1500));
+
+      localStorage.setItem('authToken', 'dummy-jwt-token');
+      localStorage.setItem('userData', JSON.stringify({
+        name: `${signupForm.firstName} ${signupForm.lastName}`,
+        rollNo: signupForm.rollNo,
+        department: signupForm.dept,
+        year: signupForm.year,
+        section: signupForm.section,
+        email: signupForm.email,
+        accommodation: signupForm.accommodation,
+        block: signupForm.block,
+        roomNo: signupForm.roomNo,
+        phone: signupForm.phone,
+        employeeId: signupForm.employeeId,
+        designation: signupForm.designation
+      }));
+
+      if (signupForm.userType === 'student') {
+        navigate('/student/home', { replace: true });
+      } else {
+        alert('Staff registration successful! Staff dashboard coming soon.');
+      }
+    } catch (error) {
+      alert('Registration failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -456,7 +509,6 @@ function App() {
 
         {currentView === 'login' ? (
           <>
-            {/* Demo Credentials Info */}
             <div className="demo-credentials">
               <div className="demo-title">Demo Credentials</div>
               <div className="demo-creds">
@@ -465,7 +517,6 @@ function App() {
               </div>
             </div>
 
-            {/* User Type Toggle */}
             <div className="toggle">
               <div
                 className={`toggle-option ${loginForm.userType === 'student' ? 'active' : ''}`}
@@ -483,7 +534,6 @@ function App() {
               </div>
             </div>
 
-            {/* Login Form */}
             <form onSubmit={handleLoginSubmit}>
               <div className="form-group">
                 <label htmlFor="email">
@@ -551,7 +601,6 @@ function App() {
           </>
         ) : (
           <>
-            {/* User Type Toggle for Signup */}
             <div className="toggle">
               <div
                 className={`toggle-option ${signupForm.userType === 'student' ? 'active' : ''}`}
@@ -569,7 +618,6 @@ function App() {
               </div>
             </div>
 
-            {/* Signup Form */}
             <form onSubmit={handleSignupSubmit}>
               <div className="form-group">
                 <select
@@ -621,7 +669,6 @@ function App() {
                 {errors.email && <div className="error-msg">⚠ {errors.email}</div>}
               </div>
 
-              {/* Student-specific fields */}
               {signupForm.userType === 'student' && (
                 <>
                   <div className="form-group">
@@ -710,7 +757,6 @@ function App() {
                 </>
               )}
 
-              {/* Staff-specific fields */}
               {signupForm.userType === 'staff' && (
                 <>
                   <div className="two-column">
@@ -812,4 +858,4 @@ function App() {
   );
 }
 
-export default App;
+export default LoginPage;
