@@ -131,11 +131,11 @@ function StudentHomePage() {
     { name: 'Home', icon: <Home size={20} />, path: '/student/home' },
     { name: 'Announcements', icon: <Bell size={20} />, path: '/student/announcements' },
     { name: 'Lost & Found', icon: <Search size={20} />, path: '/student/lost-found' },
-    { name: 'Hostel Complaint', icon: <Building size={20} />, path: '/student/hostel-complaint' },
+    { name: 'Hostel Complaint', icon: <Building size={20} />, path: '/student/hostelcomplaint' },
     { name: 'Timetable Reminder', icon: <Calendar size={20} />, path: '/student/timetable' },
     { name: 'EduExchange', icon: <BookOpen size={20} />, path: '/student/edu-exchange' },
     { name: 'StudyConnect', icon: <Users size={20} />, path: '/student/study-connect' },
-    { name: 'GrowTogether', icon: <TrendingUp size={20} />, path: '/student/grow-together' },
+    { name: 'GrowTogether', icon: <TrendingUp size={20} />, path: '/student/growtogether' },
     { name: 'Profile', icon: <User size={20} />, path: '/student/profile' }
   ];
 
@@ -158,12 +158,14 @@ function StudentHomePage() {
     return () => clearInterval(timer);
   }, []);
 
+  // ✅ FIXED: Updated handleNavClick to actually navigate
   const handleNavClick = (itemName: string, path?: string) => {
     setActiveItem(itemName);
     setIsSidebarOpen(false);
 
-    if (path && path !== '/student/home') {
+    if (path) {
       console.log(`Navigating to: ${path}`);
+      navigate(path); // ✅ Actually navigate to the path
     }
   };
 
@@ -207,6 +209,7 @@ function StudentHomePage() {
 
   return (
     <>
+      {/* Same CSS styles as before */}
       <style>{`
         * {
           margin: 0;
@@ -995,7 +998,7 @@ function StudentHomePage() {
           <div className="quick-links-grid">
             <div
               className="quick-link-card"
-              onClick={() => handleNavClick('Hostel Complaint', '/student/hostel-complaint')}
+              onClick={() => navigate('/student/hostelcomplaint')} // ✅ Direct navigation
             >
               <div
                 className="quick-link-icon"
@@ -1008,7 +1011,7 @@ function StudentHomePage() {
 
             <div
               className="quick-link-card"
-              onClick={() => handleNavClick('Profile', '/student/profile')}
+              onClick={() => navigate('/student/profile')} // ✅ Direct navigation
             >
               <div
                 className="quick-link-icon"
@@ -1021,7 +1024,7 @@ function StudentHomePage() {
 
             <div
               className="quick-link-card"
-              onClick={() => handleNavClick('GrowTogether', '/student/grow-together')}
+              onClick={() => navigate('/student/growtogether')} // ✅ Direct navigation
             >
               <div
                 className="quick-link-icon"
@@ -1034,7 +1037,7 @@ function StudentHomePage() {
 
             <div
               className="quick-link-card"
-              onClick={() => handleNavClick('Timetable Reminder', '/student/timetable')}
+              onClick={() => navigate('/student/timetable')} // ✅ Direct navigation
             >
               <div
                 className="quick-link-icon"
