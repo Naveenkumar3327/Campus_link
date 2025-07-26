@@ -1,51 +1,129 @@
+// src/components/navigation/StudentNavigation.tsx
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
-    Home,
-    Bell,
-    Search,
-    FileText,
-    Building,
-    Calendar,
-    BookOpen,
-    Users,
-    TrendingUp,
-    User,
-    Menu,
-    X,
-    GraduationCap,
-    LogOut,
-    Settings
+  Home,
+  Bell,
+  Search,
+  FileText,
+  Building,
+  Calendar,
+  BookOpen,
+  Users,
+  TrendingUp,
+  User,
+  Menu,
+  X,
+  GraduationCap,
+  LogOut,
+  Settings,
+  MessageSquare,
+  BarChart3,
+  CalendarDays
 } from 'lucide-react';
 
 interface NavigationProps {
-    userName?: string;
-    notificationCount?: number;
+  userName?: string;
+  notificationCount?: number;
 }
 
-function StudentNavigation({ userName = "John Doe", notificationCount = 3 }: NavigationProps) {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [activeItem, setActiveItem] = useState('Home');
+interface StudentData {
+  name: string;
+  rollNo: string;
+  department: string;
+  year: string;
+  section: string;
+  email: string;
+}
 
-    const navigationItems = [
-        { name: 'Home', icon: <Home size={20} />, path: '/home' },
-        { name: 'Announcements', icon: <Bell size={20} />, path: '/announcements' },
-        { name: 'Lost & Found', icon: <Search size={20} />, path: '/lost-found' },
-        { name: 'Hostel Complaint', icon: <Building size={20} />, path: '/hostel-complaint' },
-        { name: 'Timetable Reminder', icon: <Calendar size={20} />, path: '/timetable' },
-        { name: 'EduExchange', icon: <BookOpen size={20} />, path: '/edu-exchange' },
-        { name: 'StudyConnect', icon: <Users size={20} />, path: '/study-connect' },
-        { name: 'GrowTogether', icon: <TrendingUp size={20} />, path: '/grow-together' },
-        { name: 'Profile', icon: <User size={20} />, path: '/profile' }
-    ];
+function StudentNavigation({ userName, notificationCount = 3 }: NavigationProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    const handleNavClick = (itemName: string) => {
-        setActiveItem(itemName);
-        setIsSidebarOpen(false); // Close sidebar on mobile after selection
+  // Get student data from localStorage
+  const [studentData] = useState<StudentData>(() => {
+    try {
+      const userData = localStorage.getItem('userData');
+      if (userData) {
+        const parsed = JSON.parse(userData);
+        return {
+          name: parsed.name || 'John Doe',
+          rollNo: parsed.rollNo || '20CS001',
+          department: parsed.department || 'Computer Science Engineering',
+          year: parsed.year || '3rd Year',
+          section: parsed.section || 'A',
+          email: parsed.email || 'student@sece.ac.in'
+        };
+      }
+    } catch (error) {
+      console.error('Error parsing user data:', error);
+    }
+    return {
+      name: userName || "John Doe",
+      rollNo: "20CS001",
+      department: "Computer Science Engineering",
+      year: "3rd Year",
+      section: "A",
+      email: "student@sece.ac.in"
     };
+  });
 
-    return (
-        <>
-            <style>{`
+  const navigationItems = [
+    { name: 'Home', icon: <Home size={20} />, path: '/student/home' },
+    { name: 'Announcements', icon: <Bell size={20} />, path: '/student/announcements' },
+    { name: 'Lost & Found', icon: <Search size={20} />, path: '/student/lost-found' },
+    { name: 'Hostel Complaint', icon: <Building size={20} />, path: '/student/hostelcomplaint' },
+    { name: 'Timetable Reminder', icon: <Calendar size={20} />, path: '/student/timetable' },
+    { name: 'EduExchange', icon: <BookOpen size={20} />, path: '/student/edu-exchange' },
+    { name: 'StudyConnect', icon: <Users size={20} />, path: '/student/study-connect' },
+    { name: 'GrowTogether', icon: <TrendingUp size={20} />, path: '/student/grow-together' },
+    { name: 'Events', icon: <CalendarDays size={20} />, path: '/student/events' },
+    { name: 'Feedback & Polls', icon: <MessageSquare size={20} />, path: '/student/feedback-polls' },
+    { name: 'Profile', icon: <User size={20} />, path: '/student/profile' }
+  ];
+
+  const handleNavClick = (itemName: string, path: string) => {
+    console.log(`Navigating to: ${path}`);
+    navigate(path);
+    setIsSidebarOpen(false); // Close sidebar on mobile after selection
+  };
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userData');
+      navigate('/login');
+    }
+  };
+
+  const getUserInitials = (name: string): string => {
+    if (!name || typeof name !== 'string') return 'JD';
+    const nameParts = name.trim().split(' ');
+    if (nameParts.length === 1) {
+      return nameParts[0].charAt(0).toUpperCase();
+    }
+    return nameParts
+      .slice(0, 2)
+      .map(part => part.charAt(0).toUpperCase())
+      .join('');
+  };
+
+  const getFirstName = (name: string): string => {
+    if (!name || typeof name !== 'string') return 'Student';
+    return name.trim().split(' ')[0];
+  };
+
+  // Get current active item based on route
+  const getCurrentActiveItem = () => {
+    const currentPath = location.pathname;
+    const currentItem = navigationItems.find(item => item.path === currentPath);
+    return currentItem ? currentItem.name : 'Home';
+  };
+
+  return (
+    <>
+      <style>{`
         * {
           margin: 0;
           padding: 0;
@@ -54,7 +132,8 @@ function StudentNavigation({ userName = "John Doe", notificationCount = 3 }: Nav
 
         body {
           font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-          background: #f8fafc;
+          background: linear-gradient(135deg, #FFF5E0 0%, #FFEBEB 50%, #FFF5E0 100%);
+          min-height: 100vh;
         }
 
         /* Top Navigation Bar */
@@ -220,6 +299,7 @@ function StudentNavigation({ userName = "John Doe", notificationCount = 3 }: Nav
           cursor: pointer;
           border-left: 3px solid transparent;
           font-weight: 500;
+          position: relative;
         }
 
         .nav-item:hover {
@@ -244,19 +324,37 @@ function StudentNavigation({ userName = "John Doe", notificationCount = 3 }: Nav
 
         .nav-text {
           font-size: 15px;
+          flex: 1;
         }
 
-        /* Main Content Area */
-        .main-content {
-          margin-left: 280px;
-          margin-top: 70px;
-          padding: 24px;
-          min-height: calc(100vh - 70px);
-          transition: margin-left 0.3s ease;
+        /* Logout Button */
+        .logout-section {
+          position: absolute;
+          bottom: 24px;
+          left: 0;
+          right: 0;
+          padding: 0 24px;
         }
 
-        .main-content.expanded {
-          margin-left: 0;
+        .logout-btn {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+          padding: 12px 16px;
+          width: 100%;
+          background: none;
+          border: 1px solid rgba(255, 105, 105, 0.2);
+          border-radius: 8px;
+          color: #666;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-weight: 500;
+        }
+
+        .logout-btn:hover {
+          background: rgba(255, 105, 105, 0.1);
+          color: #BB2525;
+          border-color: #FF6969;
         }
 
         /* Mobile Overlay */
@@ -296,10 +394,6 @@ function StudentNavigation({ userName = "John Doe", notificationCount = 3 }: Nav
             transform: translateX(0);
           }
 
-          .main-content {
-            margin-left: 0;
-          }
-
           .user-info span {
             display: none;
           }
@@ -318,136 +412,78 @@ function StudentNavigation({ userName = "John Doe", notificationCount = 3 }: Nav
             gap: 12px;
           }
         }
-
-        /* Demo Content Styling */
-        .demo-content {
-          background: white;
-          border-radius: 12px;
-          padding: 24px;
-          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-          border: 1px solid rgba(255, 105, 105, 0.1);
-        }
-
-        .demo-title {
-          font-size: 24px;
-          font-weight: 600;
-          color: #BB2525;
-          margin-bottom: 16px;
-        }
-
-        .demo-text {
-          color: #666;
-          line-height: 1.6;
-        }
-
-        /* Logout Button */
-        .logout-section {
-          position: absolute;
-          bottom: 24px;
-          left: 0;
-          right: 0;
-          padding: 0 24px;
-        }
-
-        .logout-btn {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 12px 16px;
-          width: 100%;
-          background: none;
-          border: 1px solid rgba(255, 105, 105, 0.2);
-          border-radius: 8px;
-          color: #666;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          font-weight: 500;
-        }
-
-        .logout-btn:hover {
-          background: rgba(255, 105, 105, 0.1);
-          color: #BB2525;
-          border-color: #FF6969;
-        }
       `}</style>
 
-            {/* Top Navigation Bar */}
-            <nav className="top-navbar">
-                <div className="navbar-left">
-                    <button
-                        className="menu-toggle"
-                        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                    >
-                        {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
+      {/* Top Navigation Bar */}
+      <nav className="top-navbar">
+        <div className="navbar-left">
+          <button
+            className="menu-toggle"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            aria-label="Toggle navigation menu"
+          >
+            {isSidebarOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
 
-                    <div className="app-logo">
-                        <div className="logo-icon">
-                            <GraduationCap size={24} />
-                        </div>
-                        <div className="app-name">CampusLink</div>
-                    </div>
-                </div>
+          <div className="app-logo">
+            <div className="logo-icon">
+              <GraduationCap size={24} />
+            </div>
+            <div className="app-name">CampusLink</div>
+          </div>
+        </div>
 
-                <div className="navbar-right">
-                    <button className="notification-btn">
-                        <Bell size={20} />
-                        {notificationCount > 0 && (
-                            <span className="notification-badge">
-                                {notificationCount > 9 ? '9+' : notificationCount}
-                            </span>
-                        )}
-                    </button>
+        <div className="navbar-right">
+          <button className="notification-btn" aria-label="View notifications">
+            <Bell size={20} />
+            {notificationCount > 0 && (
+              <span className="notification-badge">
+                {notificationCount > 9 ? '9+' : notificationCount}
+              </span>
+            )}
+          </button>
 
-                    <div className="user-info">
-                        <div className="user-avatar">
-                            {userName.split(' ').map(n => n[0]).join('').toUpperCase()}
-                        </div>
-                        <span>{userName}</span>
-                    </div>
-                </div>
-            </nav>
+          <div className="user-info">
+            <div className="user-avatar">
+              {getUserInitials(studentData.name)}
+            </div>
+            <span>{getFirstName(studentData.name)}</span>
+          </div>
+        </div>
+      </nav>
 
-            {/* Sidebar Overlay for Mobile */}
-            <div
-                className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`}
-                onClick={() => setIsSidebarOpen(false)}
-            />
+      {/* Sidebar Overlay for Mobile */}
+      <div
+        className={`sidebar-overlay ${isSidebarOpen ? 'active' : ''}`}
+        onClick={() => setIsSidebarOpen(false)}
+        aria-hidden="true"
+      />
 
-            {/* Side Navigation */}
-            <nav className={`sidebar ${isSidebarOpen ? 'open' : window.innerWidth <= 768 ? 'closed' : ''}`}>
-                {navigationItems.map((item) => (
-                    <div
-                        key={item.name}
-                        className={`nav-item ${activeItem === item.name ? 'active' : ''}`}
-                        onClick={() => handleNavClick(item.name)}
-                    >
-                        <div className="nav-icon">{item.icon}</div>
-                        <div className="nav-text">{item.name}</div>
-                    </div>
-                ))}
+      {/* Side Navigation */}
+      <nav className={`sidebar ${isSidebarOpen ? 'open' : window.innerWidth <= 768 ? 'closed' : ''}`}>
+        {/* All Navigation Items */}
+        {navigationItems.map((item) => (
+          <div
+            key={item.name}
+            className={`nav-item ${getCurrentActiveItem() === item.name ? 'active' : ''}`}
+            onClick={() => handleNavClick(item.name, item.path)}
+            role="button"
+            tabIndex={0}
+          >
+            <div className="nav-icon">{item.icon}</div>
+            <div className="nav-text">{item.name}</div>
+          </div>
+        ))}
 
-                <div className="logout-section">
-                    <button className="logout-btn">
-                        <LogOut size={18} />
-                        <span>Logout</span>
-                    </button>
-                </div>
-            </nav>
-
-            {/* Main Content Area */}
-            <main className={`main-content ${isSidebarOpen && window.innerWidth <= 768 ? '' : 'expanded'}`}>
-                <div className="demo-content">
-                    <h1 className="demo-title">Welcome to {activeItem}</h1>
-                    <p className="demo-text">
-                        This is the {activeItem} section of your CampusLink dashboard.
-                        Here you can access all the features related to {activeItem.toLowerCase()}.
-                        The navigation is fully responsive and works great on both desktop and mobile devices.
-                    </p>
-                </div>
-            </main>
-        </>
-    );
+        <div className="logout-section">
+          <button className="logout-btn" onClick={handleLogout}>
+            <LogOut size={18} />
+            <span>Logout</span>
+          </button>
+        </div>
+      </nav>
+    </>
+  );
 }
 
 export default StudentNavigation;

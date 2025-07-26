@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LandingPage from './components/pages/landing';
 import LoginPage from './components/pages/login';
 import SignupPage from './components/pages/signup';
+
+// Student Pages
 import StudentHomePage from './components/pages/student/home';
 import HostelComplaintPage from './components/pages/student/hostelcomplaint';
 import AnnouncementsPage from './components/pages/student/announcements';
@@ -12,6 +14,21 @@ import EduExchangePage from './components/pages/student/eduexchange';
 import StudyConnectPage from './components/pages/student/studyconnect';
 import GrowTogetherPage from './components/pages/student/growtogether';
 import ProfilePage from './components/pages/student/profile';
+import EventsPage from './components/pages/student/events';
+import FeedbackPollsPage from './components/pages/student/feedbackpolls';
+
+// Staff Pages
+import StaffHomePage from './components/pages/staff/home';
+import StaffAnnouncementsPage from './components/pages/staff/announcements';
+import StaffLostFoundPage from './components/pages/staff/lostfound';
+import StaffComplaintsPage from './components/pages/staff/complaints';
+import StaffTimetablesPage from './components/pages/staff/timetables';
+import StaffEduExchangePage from './components/pages/staff/eduexchange';
+import StaffReportsPage from './components/pages/staff/reports';
+import StaffProfilePage from './components/pages/staff/profile';
+import StaffEventsPage from './components/pages/staff/events';
+import StaffFeedbackPollsPage from './components/pages/staff/pollsfeedback';
+
 
 // Protected Route Component
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -61,8 +78,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-// Add this route to your App.tsx
         <Route
           path="/student/timetable"
           element={
@@ -71,8 +86,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-// Add this route to your App.tsx
         <Route
           path="/student/edu-exchange"
           element={
@@ -81,8 +94,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-// Add this route to your App.tsx
         <Route
           path="/student/study-connect"
           element={
@@ -91,17 +102,30 @@ function App() {
             </ProtectedRoute>
           }
         />
-// Add this route to your App.tsx
         <Route
-          path="/student/growtogether"
+          path="/student/grow-together"
           element={
             <ProtectedRoute>
               <GrowTogetherPage />
             </ProtectedRoute>
           }
         />
-
-// Add this route to your App.tsx
+        <Route
+          path="/student/events"
+          element={
+            <ProtectedRoute>
+              <EventsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/student/feedback-polls"
+          element={
+            <ProtectedRoute>
+              <FeedbackPollsPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/student/profile"
           element={
@@ -110,6 +134,96 @@ function App() {
             </ProtectedRoute>
           }
         />
+
+        {/* Protected Staff Routes */}
+        <Route
+          path="/staff/home"
+          element={
+            <ProtectedRoute>
+              <StaffHomePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/announcements"
+          element={
+            <ProtectedRoute>
+              <StaffAnnouncementsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/lost-found"
+          element={
+            <ProtectedRoute>
+              <StaffLostFoundPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/staff/complaints"
+          element={
+            <ProtectedRoute>
+              <StaffComplaintsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/timetables"
+          element={
+            <ProtectedRoute>
+              <StaffTimetablesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff/edu-exchange"
+          element={
+            <ProtectedRoute>
+              <StaffEduExchangePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/staff/reports"
+          element={
+            <ProtectedRoute>
+              <StaffReportsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/staff/profile"
+          element={
+            <ProtectedRoute>
+              <StaffProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/staff/events"
+          element={
+            <ProtectedRoute>
+              <StaffEventsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/staff/feedback-polls"
+          element={
+            <ProtectedRoute>
+              <StaffFeedbackPollsPage />
+            </ProtectedRoute>
+          }
+        />
+
+
+        {/* Add other staff routes as you create them */}
 
         {/* Redirect Routes */}
         <Route path="/home" element={<Navigate to="/student/home" replace />} />

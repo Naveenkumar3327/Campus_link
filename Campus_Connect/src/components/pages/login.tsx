@@ -79,7 +79,7 @@ function LoginPage() {
       if (loginForm.email === expectedCreds.email && loginForm.password === expectedCreds.password) {
         localStorage.setItem('authToken', 'dummy-jwt-token');
         localStorage.setItem('userData', JSON.stringify({
-          name: loginForm.userType === 'student' ? 'John Doe' : 'Dr. Smith',
+          name: loginForm.userType === 'student' ? 'John Doe' : 'Dr. Jane Smith',
           rollNo: loginForm.userType === 'student' ? '20CS001' : undefined,
           department: 'Computer Science Engineering',
           year: loginForm.userType === 'student' ? '3rd Year' : undefined,
@@ -90,13 +90,14 @@ function LoginPage() {
           roomNo: loginForm.userType === 'student' ? 'A-201' : undefined,
           phone: '+91 9876543210',
           employeeId: loginForm.userType === 'staff' ? 'EMP001' : undefined,
-          designation: loginForm.userType === 'staff' ? 'Professor' : undefined
+          designation: loginForm.userType === 'staff' ? 'Associate Professor' : undefined
         }));
 
         if (loginForm.userType === 'student') {
           navigate('/student/home', { replace: true });
         } else {
-          alert('Staff login successful! Staff dashboard coming soon.');
+          // Redirect staff to staff home page
+          navigate('/staff/home', { replace: true });
         }
       } else {
         alert('Invalid credentials. Please check your email and password.');
@@ -126,7 +127,7 @@ function LoginPage() {
 
       localStorage.setItem('authToken', 'dummy-jwt-token');
       localStorage.setItem('userData', JSON.stringify({
-        name: `${signupForm.firstName} ${signupForm.lastName}`,
+        name: `${signupForm.prefix} ${signupForm.firstName} ${signupForm.lastName}`,
         rollNo: signupForm.rollNo,
         department: signupForm.dept,
         year: signupForm.year,
@@ -143,7 +144,8 @@ function LoginPage() {
       if (signupForm.userType === 'student') {
         navigate('/student/home', { replace: true });
       } else {
-        alert('Staff registration successful! Staff dashboard coming soon.');
+        // Redirect staff to staff home page
+        navigate('/staff/home', { replace: true });
       }
     } catch (error) {
       alert('Registration failed. Please try again.');
