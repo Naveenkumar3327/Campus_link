@@ -36,7 +36,6 @@ import {
     Check,
     AlertCircle,
     BookmarkPlus,
-    Activity,
     Calendar as CalendarIcon,
     FileText,
     Image as ImageIcon
@@ -85,15 +84,6 @@ interface StudentData {
     };
 }
 
-interface ActivityLog {
-    id: string;
-    action: string;
-    description: string;
-    timestamp: string;
-    category: 'academic' | 'profile' | 'system' | 'social';
-    icon: React.ReactNode;
-}
-
 interface NavigationItem {
     name: string;
     icon: React.ReactNode;
@@ -106,13 +96,13 @@ function ProfilePage() {
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
     const [isHovering, setIsHovering] = useState(false);
     const [activeItem, setActiveItem] = useState('Profile');
-    const [currentView, setCurrentView] = useState<'overview' | 'edit' | 'settings' | 'activity'>('overview');
+    const [currentView, setCurrentView] = useState<'overview' | 'edit' | 'settings'>('overview');
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
-    const [showPasswordChange, setShowPasswordChange] = useState(false);
+    const [isChangingPassword, setIsChangingPassword] = useState(false);
+    const [showPasswordForm, setShowPasswordForm] = useState(false);
     const [studentData, setStudentData] = useState<StudentData>({} as StudentData);
     const [editForm, setEditForm] = useState<StudentData>({} as StudentData);
-    const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
     const [passwordForm, setPasswordForm] = useState({
         currentPassword: '',
         newPassword: '',
@@ -220,59 +210,6 @@ function ProfilePage() {
             setStudentData(defaultData);
             setEditForm(defaultData);
         }
-
-        // Load activity logs
-        const savedLogs = localStorage.getItem('profileActivityLogs');
-        if (savedLogs) {
-            setActivityLogs(JSON.parse(savedLogs));
-        } else {
-            // Default activity logs
-            const defaultLogs: ActivityLog[] = [
-                {
-                    id: 'LOG001',
-                    action: 'Profile Updated',
-                    description: 'Updated profile picture and bio information',
-                    timestamp: '2025-01-26T10:30:00Z',
-                    category: 'profile',
-                    icon: <User size={16} />
-                },
-                {
-                    id: 'LOG002',
-                    action: 'Achievement Earned',
-                    description: 'Earned "Team Player" achievement',
-                    timestamp: '2025-01-25T14:15:00Z',
-                    category: 'academic',
-                    icon: <Award size={16} />
-                },
-                {
-                    id: 'LOG003',
-                    action: 'Privacy Settings Changed',
-                    description: 'Updated profile visibility settings',
-                    timestamp: '2025-01-24T16:45:00Z',
-                    category: 'system',
-                    icon: <Shield size={16} />
-                },
-                {
-                    id: 'LOG004',
-                    action: 'Study Group Joined',
-                    description: 'Joined "Data Structures Mastery" study group',
-                    timestamp: '2025-01-23T11:20:00Z',
-                    category: 'social',
-                    icon: <Users size={16} />
-                },
-                {
-                    id: 'LOG005',
-                    action: 'Resource Uploaded',
-                    description: 'Uploaded "OS Lab Manual" to EduExchange',
-                    timestamp: '2025-01-22T09:15:00Z',
-                    category: 'academic',
-                    icon: <BookOpen size={16} />
-                }
-            ];
-
-            setActivityLogs(defaultLogs);
-            localStorage.setItem('profileActivityLogs', JSON.stringify(defaultLogs));
-        }
     }, []);
 
     const navigationItems: NavigationItem[] = [
@@ -283,7 +220,6 @@ function ProfilePage() {
         { name: 'Timetable Reminder', icon: <Calendar size={20} />, path: '/student/timetable' },
         { name: 'EduExchange', icon: <BookOpen size={20} />, path: '/student/edu-exchange' },
         { name: 'StudyConnect', icon: <Users size={20} />, path: '/student/study-connect' },
-        { name: 'GrowTogether', icon: <TrendingUp size={20} />, path: '/student/grow-together' },
         { name: 'Profile', icon: <User size={20} />, path: '/student/profile' }
     ];
 
@@ -350,21 +286,6 @@ function ProfilePage() {
             localStorage.setItem('userData', JSON.stringify(editForm));
             setStudentData(editForm);
 
-            // Add activity log
-            const newLog: ActivityLog = {
-                id: `LOG${Date.now()}`,
-                action: 'Profile Updated',
-                description: 'Updated profile information successfully',
-                timestamp: new Date().toISOString(),
-                category: 'profile',
-                icon: <User size={16} />
-            };
-
-            const updatedLogs = [newLog, ...activityLogs];
-            setActivityLogs(updatedLogs);
-            localStorage.setItem('profileActivityLogs', JSON.stringify(updatedLogs));
-
-            setIsEditing(false);
             alert('Profile updated successfully!');
         } catch (error) {
             alert('Failed to update profile. Please try again.');
@@ -389,21 +310,21 @@ function ProfilePage() {
             await new Promise(resolve => setTimeout(resolve, 1000));
 
             // Add activity log
-            const newLog: ActivityLog = {
-                id: `LOG${Date.now()}`,
-                action: 'Password Changed',
-                description: 'Account password updated successfully',
-                timestamp: new Date().toISOString(),
-                category: 'system',
-                icon: <Shield size={16} />
-            };
+            // const newLog: any = { // Changed to any as ActivityLog interface is removed
+            //     id: `LOG${Date.now()}`,
+            //     action: 'Password Changed',
+            //     description: 'Account password updated successfully',
+            //     timestamp: new Date().toISOString(),
+            //     category: 'system',
+            //     icon: <Shield size={16} />
+            // };
 
-            const updatedLogs = [newLog, ...activityLogs];
-            setActivityLogs(updatedLogs);
-            localStorage.setItem('profileActivityLogs', JSON.stringify(updatedLogs));
+            // const updatedLogs = [newLog, ...activityLogs];
+            // setActivityLogs(updatedLogs);
+            // localStorage.setItem('profileActivityLogs', JSON.stringify(updatedLogs));
 
             setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
-            setShowPasswordChange(false);
+            setShowPasswordForm(false);
             alert('Password changed successfully!');
         } catch (error) {
             alert('Failed to change password. Please try again.');
@@ -741,40 +662,34 @@ function ProfilePage() {
 
         /* Main Content Area */
         .main-content {
-          margin-left: ${(window.innerWidth <= 768) ? '0px' : ((isSidebarCollapsed && !isHovering) ? '70px' : '280px')};
+          margin-left: ${(isSidebarCollapsed && !isHovering) ? '70px' : '280px'};
           margin-top: 70px;
           padding: 24px;
           min-height: calc(100vh - 70px);
           transition: margin-left 0.3s ease;
-          width: calc(100vw - ${(window.innerWidth <= 768) ? '0px' : ((isSidebarCollapsed && !isHovering) ? '70px' : '280px')});
-          max-width: calc(100vw - ${(window.innerWidth <= 768) ? '0px' : ((isSidebarCollapsed && !isHovering) ? '70px' : '280px')});
-          box-sizing: border-box;
+          max-width: 1200px;
+          margin-right: auto;
         }
 
-        /* Header Section */
+        .main-content.expanded {
+          margin-left: 0;
+        }
+
+        /* Page Header */
         .page-header {
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(20px);
-          border-radius: 16px;
-          padding: 24px;
-          margin-bottom: 24px;
-          border: 1px solid rgba(255, 105, 105, 0.1);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 32px;
+          flex-wrap: wrap;
+          gap: 16px;
         }
 
         .header-content {
           display: flex;
-          justify-content: space-between;
           align-items: center;
+          gap: 16px;
           flex-wrap: wrap;
-          gap: 16px;
-          margin-bottom: 20px;
-        }
-
-        .header-left {
-          display: flex;
-          align-items: center;
-          gap: 16px;
         }
 
         .back-btn {
@@ -820,10 +735,11 @@ function ProfilePage() {
           background: #FFF5E0;
           border-radius: 8px;
           padding: 4px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .toggle-btn {
-          padding: 8px 16px;
+          padding: 10px 20px;
           border: none;
           background: none;
           cursor: pointer;
@@ -833,6 +749,9 @@ function ProfilePage() {
           display: flex;
           align-items: center;
           gap: 8px;
+          font-size: 14px;
+          min-width: 100px;
+          justify-content: center;
         }
 
         .toggle-btn.active {
@@ -845,13 +764,18 @@ function ProfilePage() {
           color: #BB2525;
         }
 
+        .toggle-btn:hover:not(.active) {
+          background: rgba(255, 105, 105, 0.1);
+        }
+
         .profile-actions {
           display: flex;
           gap: 12px;
+          align-items: center;
         }
 
         .action-btn {
-          padding: 8px 16px;
+          padding: 10px 20px;
           border: none;
           border-radius: 8px;
           font-weight: 500;
@@ -861,6 +785,8 @@ function ProfilePage() {
           align-items: center;
           gap: 8px;
           font-size: 14px;
+          min-width: 120px;
+          justify-content: center;
         }
 
         .action-btn.primary {
@@ -888,9 +814,10 @@ function ProfilePage() {
         /* Profile Overview */
         .profile-overview {
           display: grid;
-          grid-template-columns: 300px 1fr;
-          gap: 24px;
-          margin-bottom: 24px;
+          grid-template-columns: 350px 1fr;
+          gap: 32px;
+          margin-bottom: 32px;
+          align-items: start;
         }
 
         .profile-card {
@@ -902,16 +829,18 @@ function ProfilePage() {
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
           text-align: center;
           position: relative;
+          height: fit-content;
         }
 
         .profile-picture {
           width: 120px;
           height: 120px;
           border-radius: 50%;
-          margin: 0 auto 20px;
+          margin: 0 auto 24px;
           position: relative;
           overflow: hidden;
           border: 4px solid rgba(255, 105, 105, 0.2);
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
         }
 
         .profile-picture img {
@@ -968,18 +897,22 @@ function ProfilePage() {
         .profile-department {
           color: #666;
           font-size: 14px;
-          margin-bottom: 20px;
+          margin-bottom: 24px;
         }
 
         .profile-stats {
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
           gap: 16px;
-          margin-top: 20px;
+          margin: 24px 0;
         }
 
         .stat-item {
           text-align: center;
+          padding: 12px;
+          background: rgba(255, 255, 255, 0.5);
+          border-radius: 8px;
+          border: 1px solid rgba(255, 105, 105, 0.1);
         }
 
         .stat-value {
@@ -1016,32 +949,41 @@ function ProfilePage() {
           font-size: 18px;
           font-weight: 600;
           color: #333;
-          margin-bottom: 16px;
+          margin-bottom: 20px;
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 12px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid rgba(255, 105, 105, 0.1);
         }
 
         .info-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
           gap: 16px;
         }
 
         .info-item {
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 12px;
+          gap: 16px;
+          padding: 16px;
           background: rgba(255, 255, 255, 0.6);
-          border-radius: 8px;
+          border-radius: 12px;
           border: 1px solid rgba(255, 105, 105, 0.1);
+          transition: all 0.2s;
+        }
+
+        .info-item:hover {
+          background: rgba(255, 255, 255, 0.8);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .info-icon {
-          width: 36px;
-          height: 36px;
-          border-radius: 8px;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
           background: linear-gradient(135deg, #FF6969, #BB2525);
           display: flex;
           align-items: center;
@@ -1058,7 +1000,9 @@ function ProfilePage() {
           font-size: 12px;
           color: #666;
           font-weight: 500;
-          margin-bottom: 2px;
+          margin-bottom: 4px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
 
         .info-value {
@@ -1071,39 +1015,51 @@ function ProfilePage() {
           color: #666;
           line-height: 1.6;
           font-size: 14px;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.5);
+          border-radius: 8px;
+          border: 1px solid rgba(255, 105, 105, 0.1);
         }
 
         .tags-container {
           display: flex;
           gap: 8px;
           flex-wrap: wrap;
+          padding: 16px;
+          background: rgba(255, 255, 255, 0.5);
+          border-radius: 8px;
+          border: 1px solid rgba(255, 105, 105, 0.1);
         }
 
         .tag {
           background: rgba(255, 105, 105, 0.1);
           color: #BB2525;
-          padding: 4px 8px;
-          border-radius: 4px;
+          padding: 6px 12px;
+          border-radius: 6px;
           font-size: 12px;
           font-weight: 500;
+          border: 1px solid rgba(255, 105, 105, 0.2);
         }
 
         .social-links {
           display: flex;
           gap: 12px;
+          justify-content: center;
+          margin-top: 20px;
         }
 
         .social-link {
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
+          width: 44px;
+          height: 44px;
+          border-radius: 10px;
           background: linear-gradient(135deg, #FF6969, #BB2525);
           color: white;
           text-decoration: none;
           transition: all 0.2s;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         .social-link:hover {
@@ -1119,17 +1075,19 @@ function ProfilePage() {
           padding: 32px;
           border: 1px solid rgba(255, 105, 105, 0.1);
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+          max-width: 800px;
+          margin: 0 auto;
         }
 
         .form-grid {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 20px;
-          margin-bottom: 24px;
+          gap: 24px;
+          margin-bottom: 32px;
         }
 
         .form-group {
-          margin-bottom: 20px;
+          margin-bottom: 24px;
         }
 
         .form-group.full-width {
@@ -1170,7 +1128,10 @@ function ProfilePage() {
           display: flex;
           align-items: center;
           gap: 8px;
-          margin-bottom: 8px;
+          margin-bottom: 12px;
+          padding: 8px;
+          background: rgba(255, 255, 255, 0.5);
+          border-radius: 6px;
         }
 
         .checkbox-input {
@@ -1186,28 +1147,46 @@ function ProfilePage() {
           padding: 32px;
           border: 1px solid rgba(255, 105, 105, 0.1);
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+          max-width: 800px;
+          margin: 0 auto;
         }
 
         .settings-section {
           margin-bottom: 32px;
-          padding-bottom: 24px;
-          border-bottom: 1px solid rgba(255, 105, 105, 0.1);
         }
 
         .settings-section:last-child {
           margin-bottom: 0;
-          border-bottom: none;
+        }
+
+        .section-title {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          font-size: 18px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 20px;
+          padding-bottom: 8px;
+          border-bottom: 2px solid rgba(255, 105, 105, 0.1);
         }
 
         .setting-item {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 16px;
+          padding: 20px;
           background: rgba(255, 255, 255, 0.6);
-          border-radius: 8px;
+          border-radius: 12px;
+          margin-bottom: 16px;
           border: 1px solid rgba(255, 105, 105, 0.1);
-          margin-bottom: 12px;
+          transition: all 0.2s;
+        }
+
+        .setting-item:hover {
+          background: rgba(255, 255, 255, 0.8);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
         .setting-info {
@@ -1218,154 +1197,57 @@ function ProfilePage() {
           font-weight: 600;
           color: #333;
           margin-bottom: 4px;
+          font-size: 14px;
         }
 
         .setting-description {
-          font-size: 12px;
+          font-size: 13px;
           color: #666;
+          line-height: 1.4;
+        }
+
+        .privacy-toggle {
+          display: flex;
+          align-items: center;
+          gap: 12px;
         }
 
         .toggle-switch {
-          width: 44px;
-          height: 24px;
-          border-radius: 12px;
-          border: none;
-          cursor: pointer;
           position: relative;
-          transition: all 0.2s;
-        }
-
-        .toggle-switch.enabled {
-          background: linear-gradient(135deg, #FF6969, #BB2525);
-        }
-
-        .toggle-switch.disabled {
+          width: 48px;
+          height: 24px;
           background: #ddd;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .toggle-switch.active {
+          background: #FF6969;
         }
 
         .toggle-switch::after {
           content: '';
           position: absolute;
+          top: 2px;
+          left: 2px;
           width: 20px;
           height: 20px;
-          border-radius: 50%;
           background: white;
-          top: 2px;
-          transition: all 0.2s;
+          border-radius: 50%;
+          transition: transform 0.2s;
         }
 
-        .toggle-switch.enabled::after {
-          right: 2px;
-        }
-
-        .toggle-switch.disabled::after {
-          left: 2px;
+        .toggle-switch.active::after {
+          transform: translateX(24px);
         }
 
         .password-form {
-          background: rgba(255, 105, 105, 0.05);
-          border-radius: 12px;
-          padding: 20px;
-          margin-top: 16px;
-        }
-
-        /* Activity Log */
-        .activity-container {
-          background: rgba(255, 255, 255, 0.9);
-          backdrop-filter: blur(20px);
-          border-radius: 16px;
-          padding: 32px;
-          border: 1px solid rgba(255, 105, 105, 0.1);
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-        }
-
-        .activity-timeline {
-          position: relative;
-        }
-
-        .activity-timeline::before {
-          content: '';
-          position: absolute;
-          left: 20px;
-          top: 0;
-          bottom: 0;
-          width: 2px;
-          background: linear-gradient(135deg, #FF6969, #BB2525);
-          opacity: 0.2;
-        }
-
-        .activity-item {
-          display: flex;
-          gap: 16px;
-          margin-bottom: 24px;
-          position: relative;
-        }
-
-        .activity-item::before {
-          content: '';
-          position: absolute;
-          left: 16px;
-          top: 16px;
-          width: 8px;
-          height: 8px;
-          border-radius: 50%;
-          background: linear-gradient(135deg, #FF6969, #BB2525);
-          z-index: 1;
-        }
-
-        .activity-icon {
-          width: 40px;
-          height: 40px;
-          border-radius: 8px;
-          background: linear-gradient(135deg, #FF6969, #BB2525);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: white;
-          flex-shrink: 0;
-        }
-
-        .activity-content {
-          flex: 1;
           background: rgba(255, 255, 255, 0.6);
           border-radius: 12px;
-          padding: 16px;
+          padding: 24px;
+          margin-top: 20px;
           border: 1px solid rgba(255, 105, 105, 0.1);
-        }
-
-        .activity-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          margin-bottom: 8px;
-        }
-
-        .activity-title {
-          font-weight: 600;
-          color: #333;
-          font-size: 14px;
-        }
-
-        .activity-time {
-          font-size: 12px;
-          color: #666;
-        }
-
-        .activity-description {
-          color: #666;
-          font-size: 13px;
-          line-height: 1.4;
-        }
-
-        .activity-category {
-          padding: 2px 6px;
-          border-radius: 4px;
-          font-size: 10px;
-          font-weight: 600;
-          text-transform: uppercase;
-          border: 1px solid;
-          display: inline-block;
-          margin-top: 8px;
         }
 
         /* Mobile Responsiveness */
@@ -1401,35 +1283,104 @@ function ProfilePage() {
           .header-content {
             flex-direction: column;
             align-items: flex-start;
+            gap: 12px;
           }
 
           .view-toggle {
             width: 100%;
+            justify-content: center;
           }
 
           .toggle-btn {
             flex: 1;
-            justify-content: center;
+            min-width: auto;
           }
 
           .profile-overview {
             grid-template-columns: 1fr;
+            gap: 24px;
           }
 
-          .form-grid {
-            grid-template-columns: 1fr;
+          .profile-card {
+            padding: 24px;
           }
 
-          .form-group.full-width {
-            grid-column: span 1;
+          .profile-stats {
+            grid-template-columns: 1fr 1fr;
           }
 
           .info-grid {
             grid-template-columns: 1fr;
           }
 
+          .edit-form {
+            padding: 24px;
+          }
+
+          .form-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
+
+          .form-group.full-width {
+            grid-column: span 1;
+          }
+
+          .profile-actions {
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+          }
+
+          .action-btn {
+            width: 100%;
+            min-width: auto;
+          }
+
+          .settings-container {
+            padding: 24px;
+          }
+
+          .setting-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+
+          .privacy-toggle {
+            align-self: flex-end;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .main-content {
+            padding: 12px;
+          }
+
+          .page-header {
+            margin-bottom: 24px;
+          }
+
+          .profile-card {
+            padding: 20px;
+          }
+
+          .profile-picture {
+            width: 100px;
+            height: 100px;
+          }
+
+          .profile-name {
+            font-size: 20px;
+          }
+
           .profile-stats {
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
+          }
+
+          .edit-form,
+          .settings-container {
+            padding: 20px;
           }
         }
 
@@ -1499,7 +1450,7 @@ function ProfilePage() {
                 <div className="navbar-right">
                     <button className="notification-btn" aria-label="View notifications">
                         <Bell size={20} />
-                        <span className="notification-badge">{activityLogs.length}</span>
+                        <span className="notification-badge">{0}</span>
                     </button>
 
                     <div className="user-info">
@@ -1584,13 +1535,6 @@ function ProfilePage() {
                             >
                                 <Settings size={16} />
                                 Settings
-                            </button>
-                            <button
-                                className={`toggle-btn ${currentView === 'activity' ? 'active' : ''}`}
-                                onClick={() => setCurrentView('activity')}
-                            >
-                                <Activity size={16} />
-                                Activity
                             </button>
                         </div>
                     </div>
@@ -1718,7 +1662,7 @@ function ProfilePage() {
 
                                     <div className="info-item">
                                         <div className="info-icon">
-                                            <Activity size={16} />
+                                            <Award size={16} />
                                         </div>
                                         <div className="info-content">
                                             <div className="info-label">Blood Group</div>
@@ -2105,7 +2049,7 @@ function ProfilePage() {
                                     <div className="setting-description">Allow others to see your email address on your profile</div>
                                 </div>
                                 <button
-                                    className={`toggle-switch ${editForm.privacySettings?.showEmail ? 'enabled' : 'disabled'}`}
+                                    className={`toggle-switch ${editForm.privacySettings?.showEmail ? 'active' : ''}`}
                                     onClick={() => handlePrivacyChange('showEmail', !editForm.privacySettings?.showEmail)}
                                 />
                             </div>
@@ -2116,7 +2060,7 @@ function ProfilePage() {
                                     <div className="setting-description">Allow others to see your phone number on your profile</div>
                                 </div>
                                 <button
-                                    className={`toggle-switch ${editForm.privacySettings?.showPhone ? 'enabled' : 'disabled'}`}
+                                    className={`toggle-switch ${editForm.privacySettings?.showPhone ? 'active' : ''}`}
                                     onClick={() => handlePrivacyChange('showPhone', !editForm.privacySettings?.showPhone)}
                                 />
                             </div>
@@ -2127,7 +2071,7 @@ function ProfilePage() {
                                     <div className="setting-description">Allow others to see your CGPA and academic details</div>
                                 </div>
                                 <button
-                                    className={`toggle-switch ${editForm.privacySettings?.showAcademics ? 'enabled' : 'disabled'}`}
+                                    className={`toggle-switch ${editForm.privacySettings?.showAcademics ? 'active' : ''}`}
                                     onClick={() => handlePrivacyChange('showAcademics', !editForm.privacySettings?.showAcademics)}
                                 />
                             </div>
@@ -2163,14 +2107,14 @@ function ProfilePage() {
                                 </div>
                                 <button
                                     className="action-btn secondary"
-                                    onClick={() => setShowPasswordChange(!showPasswordChange)}
+                                    onClick={() => setShowPasswordForm(!showPasswordForm)}
                                 >
                                     <Shield size={16} />
-                                    {showPasswordChange ? 'Cancel' : 'Change Password'}
+                                    {showPasswordForm ? 'Cancel' : 'Change Password'}
                                 </button>
                             </div>
 
-                            {showPasswordChange && (
+                            {showPasswordForm && (
                                 <div className="password-form">
                                     <div className="form-group">
                                         <label className="form-label">Current Password</label>
@@ -2252,34 +2196,6 @@ function ProfilePage() {
                                 <Save size={16} />
                                 {isSaving ? 'Saving...' : 'Save Settings'}
                             </button>
-                        </div>
-                    </div>
-                )}
-
-                {currentView === 'activity' && (
-                    <div className="activity-container">
-                        <h2 style={{ marginBottom: '24px', color: '#333', fontSize: '20px', fontWeight: '600' }}>
-                            Activity Log
-                        </h2>
-
-                        <div className="activity-timeline">
-                            {activityLogs.map((log) => (
-                                <div key={log.id} className="activity-item">
-                                    <div className="activity-icon">
-                                        {log.icon}
-                                    </div>
-                                    <div className="activity-content">
-                                        <div className="activity-header">
-                                            <div className="activity-title">{log.action}</div>
-                                            <div className="activity-time">{formatDate(log.timestamp)}</div>
-                                        </div>
-                                        <div className="activity-description">{log.description}</div>
-                                        <span className={`activity-category ${getCategoryColor(log.category)}`}>
-                                            {log.category}
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
                         </div>
                     </div>
                 )}
