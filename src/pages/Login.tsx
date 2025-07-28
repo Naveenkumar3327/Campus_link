@@ -11,26 +11,26 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   const from = location.state?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast.error('Please fill in all fields');
       return;
     }
 
     setLoading(true);
-    
+
     try {
       const success = await login(email, password);
-      
+
       if (success) {
         toast.success('Login successful!');
         navigate(from, { replace: true });
@@ -47,7 +47,7 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-blue-100 flex items-center justify-center p-4">
       <Toaster position="top-right" />
-      
+
       {/* Animated background particles */}
       <div className="absolute inset-0 overflow-hidden">
         {[...Array(20)].map((_, i) => (
@@ -89,23 +89,14 @@ const Login: React.FC = () => {
             >
               <GraduationCap className="w-10 h-10 text-white" />
             </motion.div>
-            
+
             <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
               Welcome Back
             </h1>
             <p className="text-gray-600">Sign in to your Campus Connect account</p>
           </div>
 
-          {/* Demo Credentials */}
-          <div className="mb-6 p-4 bg-blue-50/50 rounded-lg border border-blue-200/50">
-            <p className="text-sm text-blue-800 font-medium mb-2">Demo Credentials:</p>
-            <div className="text-xs text-blue-700 space-y-1">
-              <p><strong>Student:</strong> student@campus.edu</p>
-              <p><strong>Staff:</strong> staff@campus.edu</p>
-              <p><strong>Admin:</strong> admin@campus.edu</p>
-              <p><strong>Password:</strong> password123</p>
-            </div>
-          </div>
+
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
